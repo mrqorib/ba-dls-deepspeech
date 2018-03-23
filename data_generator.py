@@ -47,8 +47,9 @@ class DataGenerator(object):
         Params:
             audio_clip(str): Path to the audio clip
         """
+        abs_audio_path = os.path.abspath(audio_clip.replace("\\", os.sep).replace('/', os.sep))
         return spectrogram_from_file(
-            audio_clip, step=self.step, window=self.window,
+            abs_audio_path, step=self.step, window=self.window,
             max_freq=self.max_freq)
 
     def load_metadata_from_desc_file(self, desc_file, partition='train',
