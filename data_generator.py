@@ -6,6 +6,7 @@ them to the network for training or testing.
 from __future__ import absolute_import, division, print_function
 from functools import reduce
 
+import os
 import json
 import logging
 import numpy as np
@@ -77,9 +78,9 @@ class DataGenerator(object):
                     # Change to (KeyError, ValueError) or
                     # (KeyError,json.decoder.JSONDecodeError), depending on
                     # json module version
-                    logger.warn('Error reading line #{}: {}'
+                    logger.warning('Error reading line #{}: {}'
                                 .format(line_num, json_line))
-                    logger.warn(str(e))
+                    logger.warning(str(e))
 
         if partition == 'train':
             self.train_audio_paths = audio_paths
@@ -126,7 +127,24 @@ class DataGenerator(object):
         # Features is a list of (timesteps, feature_dim) arrays
         # Calculate the features for each audio clip, as the log of the
         # Fourier Transform of the audio
-        features = [self.featurize(a) for a in audio_paths]
+        features = []
+        # features = [self.featurize(a) for a in audio_paths]
+        filtered_text = []
+        for i in range(len(audio_paths)):
+            abs_audio_path = os.path.abspath(audio_paths[i].replace("\\", os.sep).replace('/', os.sep))
+            try:
+                audio_feature = self.featurize(abs_audio_path)
+                features.append(audio_feature)
+                filtered_text.append(texts[i])
+            except Exception as e:
+                logger.warning('Error reading audio path: {}'
+                                .format(abs_audio_path))
+                logger.warning(str(e))
+        texts = filtered_text
+
+        assert len(features) == len(texts), \
+            "Features and texts must be of the same number"
+
         input_lengths = [f.shape[0] for f in features]
         max_length = max(input_lengths)
         feature_dim = features[0].shape[1]
