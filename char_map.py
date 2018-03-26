@@ -27,6 +27,8 @@ w 25
 x 26
 y 27
 z 28
+- 29
+, 30
 """
 char_map = {}
 index_map = {}
